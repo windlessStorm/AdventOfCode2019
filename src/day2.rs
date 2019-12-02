@@ -2,12 +2,15 @@ use std::fs::File;
 use std::io::prelude::Read;
 
 pub fn day2() {
+
+    // create all combinations for cross product (0,1,2,3,..99) X (0,1,2,3,..99)
+    // pair = [(0,0), (0,1).. (0,99), (1,0), (1,1), (1,2).. (1,99).......... (99,99)]
     let a: Vec<u8> = (0..100).collect();
     let b: Vec<u8> = (0..100).collect();
-    let mut pair: Vec<(u8, u8)> = Vec::new();
+    let mut pairs: Vec<(u8, u8)> = Vec::new();
     for i in a {
         for j in b.clone() {
-            pair.push((i,j))
+            pairs.push((i,j))
         }
     }
 
@@ -25,7 +28,7 @@ pub fn day2() {
     }
     let mut result = input_mut[0];
     println!("D21: Program HALT with defaukt pair {} and {} with position [0]= {}", 12, 2, result);
-    for (noun, verb) in pair.clone() {
+    for (noun, verb) in pairs.clone() {
         input_mut = input.to_vec(); 
         let exitcode = computer(&mut input_mut, noun, verb);
         if exitcode != 1{
