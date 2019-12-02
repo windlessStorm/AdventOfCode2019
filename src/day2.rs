@@ -31,7 +31,7 @@ pub fn day2() {
 
     // PART 2
     let mut result = input_mut[0];
-    println!("D21: Program HALT with defaukt pair {} and {} with position [0]= {}", 12, 2, result);
+    println!("D21: Program HALT with default pair {} and {} with position [0]= {}", 12, 2, result);
     for (noun, verb) in pairs.clone() {
         input_mut = input.to_vec(); 
         let exitcode = computer(&mut input_mut, noun, verb);
