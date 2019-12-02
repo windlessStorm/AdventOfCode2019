@@ -1,7 +1,8 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+
 pub fn day1() {
-    let fname = "D:\\aoc2019\\src\\inputs\\day11.txt";
+    let fname = "D:\\aoc2019\\src\\inputs\\day1.txt";
 
     let f = File::open(fname).expect("Unable to open file!");
     let buf = BufReader::new(f);

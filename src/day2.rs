@@ -21,11 +21,15 @@ pub fn day2() {
 
     let input: Vec<usize> = inputbuf.split(",").map(|x| x.parse::<usize>().unwrap()).collect();
 
+
+    // PART 1
     let mut input_mut: Vec<usize> = input.to_vec();
     let exitcode = computer(&mut input_mut, 12, 2);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
+
+    // PART 2
     let mut result = input_mut[0];
     println!("D21: Program HALT with defaukt pair {} and {} with position [0]= {}", 12, 2, result);
     for (noun, verb) in pairs.clone() {
