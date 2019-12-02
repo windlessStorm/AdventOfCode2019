@@ -54,12 +54,12 @@ fn computer(input: &mut Vec<usize>, noun: u8, verb: u8) -> i8 {
         let opcode = input[i];
         match opcode {
             1 => { // ADD
-                let store_location = input[i+3] as usize;
-                input[store_location] = input[input[i+1] as usize] + input[input[i+2] as usize];
+                let store_location = input[i+3];
+                input[store_location] = input[input[i+1]] + input[input[i+2]];
             }
             2 => { // MUL
-                let store_location = input[i+3] as usize;
-                input[store_location] = input[input[i+1] as usize] * input[input[i+2] as usize];
+                let store_location = input[i+3];
+                input[store_location] = input[input[i+1]] * input[input[i+2]];
             }
             99 => { // HALT
                 return 1;
