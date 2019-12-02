@@ -47,8 +47,8 @@ fn computer(input: &mut Vec<usize>, noun: u8, verb: u8) -> i8 {
     input[2] = verb as usize;
     let mut i = 0;
     while i < input.len() {
-        let instruction = input[i];
-        match instruction {
+        let opcode = input[i];
+        match opcode {
             1 => { // ADD
                 let store_location = input[i+3] as usize;
                 input[store_location] = input[input[i+1] as usize] + input[input[i+2] as usize];
@@ -64,7 +64,7 @@ fn computer(input: &mut Vec<usize>, noun: u8, verb: u8) -> i8 {
                 return -1;
             }
         }
-        i+=4; // JUMP 4 MEMORY LOCATION TO GET TO NEXT INSTRUCTION
+        i+=4; // JUMP 4 MEMORY LOCATION TO GET TO NEXT opcode
     }
     return 1;
 }
