@@ -10,8 +10,8 @@ pub fn day4() {
         if part1 { count_part1+=1 }
         if part2 { count_part2+=1 }
     }
-    println!("D41: count = {}", count_part1);
-    println!("D42: count = {}", count_part2);
+    println!("D41: Total password candidate count pt1 = {}", count_part1);
+    println!("D42: Total password candidate count pt2 = {}", count_part2);
 }
 
 fn eval_password(password: Vec<char>) -> (bool, bool) {
