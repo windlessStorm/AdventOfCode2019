@@ -1,6 +1,5 @@
 pub fn day4() {
-    let mut count_part1 = 0;
-    let mut count_part2 = 0;
+    let ( mut count_part1, mut count_part2) = (0, 0);
 
     for n in 109165..576723 {
         let password: Vec<char> = n.to_string()
@@ -17,38 +16,25 @@ pub fn day4() {
 
 fn eval_password(password: Vec<char>) -> (bool, bool) {
     let mut stack: Vec<u32> = Vec::new();
-    let mut increasing_sequence = true;
-    let mut only_two = false;
-    let mut match_flag = false;
     let mut instance = 1;
-    let mut passed_two = false;
-    let mut passed_one = false;
+    let ( mut passed_one, mut passed_two) = (false, false);
     
     for cur in password {
-        
         let cur = cur.to_digit(10).unwrap();
-
         if let Some(last) = stack.pop() {
             if last == cur {
-                match_flag = true;
+                passed_one = true;
                 instance += 1;
-                stack.push(last);
                 stack.push(cur);
-                continue;
             } else if last < cur  {
-                if instance == 2 { only_two = true }
+                if instance == 2 { passed_two = true }
                 instance = 1;
-                stack.push(last);
                 stack.push(cur);
-            } else {
-                increasing_sequence = false;
-                break;
+            } else { // non increasing sequence, return
+               return (false,false);
             }
         } else { stack.push(cur) }
     }
-    if instance == 2 { only_two = true }
-    if increasing_sequence && match_flag { passed_one = true }
-    if only_two && increasing_sequence { passed_two = true }
-
+    if instance == 2 { passed_two = true} // when the repeating sequence of 2 repeats is at the end
     (passed_one, passed_two)
 }
