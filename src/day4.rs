@@ -16,7 +16,7 @@ pub fn day4() {
 }
 
 fn eval_password(password: Vec<char>) -> (bool, bool) {
-    let mut stack: Vec<char> = Vec::new();
+    let mut stack: Vec<u32> = Vec::new();
     let mut increasing_sequence = true;
     let mut only_two = false;
     let mut match_flag = false;
@@ -24,28 +24,31 @@ fn eval_password(password: Vec<char>) -> (bool, bool) {
     let mut passed_two = false;
     let mut passed_one = false;
     
-    for c in password {
+    for cur in password {
+        
+        let cur = cur.to_digit(10).unwrap();
+
         if let Some(last) = stack.pop() {
-            if last == c {
+            if last == cur {
                 match_flag = true;
                 instance += 1;
                 stack.push(last);
-                stack.push(c);
+                stack.push(cur);
                 continue;
-            } else if last.to_digit(10).unwrap() < c.to_digit(10).unwrap()  {
+            } else if last < cur  {
                 if instance == 2 { only_two = true }
                 instance = 1;
                 stack.push(last);
-                stack.push(c);
+                stack.push(cur);
             } else {
                 increasing_sequence = false;
                 break;
             }
-        } else { stack.push(c) }
+        } else { stack.push(cur) }
     }
     if instance == 2 { only_two = true }
     if increasing_sequence && match_flag { passed_one = true }
     if only_two && increasing_sequence { passed_two = true }
-    
+
     (passed_one, passed_two)
 }
