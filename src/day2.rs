@@ -26,7 +26,8 @@ pub fn day2() {
     let mut input_mut: Vec<isize> = input.to_vec();
     input_mut[1] = 12;
     input_mut[2] = 2;
-    let (exitcode, _) = computer(&mut input_mut);
+    let mut stdinbuf: Vec<isize> = Vec::new();
+    let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
@@ -37,7 +38,7 @@ pub fn day2() {
         input_mut = input.to_vec();
         input_mut[1] = noun as isize;
         input_mut[2] = verb as isize;
-        let (exitcode, _) = computer(&mut input_mut);
+        let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf);
         if exitcode != 1{
             panic!("Exit code: {} !! Something went wrong!!", exitcode);
         }
@@ -49,207 +50,197 @@ pub fn day2() {
     }
 }
 
-// pub struct 
-
 fn parse_instruction(n: usize) -> (usize, usize, usize, usize) {
-    let mut mod321op: String = n.to_string().chars().collect();
-    // println!("{:?}", mod321op);
-    let op;
-    // let mut mod1 = "".to_string();
-    // let mut mod2 = "".to_string();
-    // let mut mod3 = "".to_string();
-    let mut mod1 = 0;
-    let mut mod2 = 0;
-    let mut mod3 = 0;
-    match mod321op.len() {
-    
-        1 | 2 => {
-            match mod321op.parse::<usize>() {
-                Ok(v) => op = v,
-                _ => {
-                    println!("Failed for: {:?}\n Full instruction: {}", mod321op, n);
-                    panic!("parse int faied!");
-                }
-            }
-        }
-        3 => {
-            let tmp: String = mod321op.drain(..(mod321op.len()-2)).collect();
-            match tmp.parse::<usize>() {
-                Ok(v) => mod1 = v,
-                _ => {
-                    // println!("{:?}", tmp);
-                    println!("Failed for: {:?}\n Full instruction: {}", tmp, n);
-                    panic!("parse int faied!");
-                }
-            }
-            // mod1 = tmp.parse::<usize>().unwrap();
-            // op = mod321op.parse::<usize>().unwrap();
-            match mod321op.parse::<usize>() {
-                Ok(v) => op = v,
-                _ => {
-                    // println!("{:?}", mod321op);
-                    println!("Failed for: {:?}\n Full instruction: {}", mod321op, n);
-                    panic!("parse int faied!");
-                }
-            }
-        }
-        4 | 5 => {
-            let mut mod321: String = mod321op.drain(..(mod321op.len()-2)).collect();
-            // op = mod321op.parse::<usize>().unwrap();
-            match mod321op.parse::<usize>() {
-                Ok(v) => op = v,
-                _ => {
-                    // println!("{:?}", mod321op);
-                    println!("Failed for: {:?}\n Full instruction: {}", mod321op, n);
-                    panic!("parse int faied!");
-                }
-            }
-            let mut mod32: String = mod321.drain(..(mod321.len()-1)).collect();
-            // mod1 = mod321.parse::<usize>().unwrap();
-            match mod321.parse::<usize>() {
-                Ok(v) => mod1 = v,
-                _ => {
-                    // println!("{:?}", mod321);
-                    println!("Failed for: {:?}\n Full instruction: {}", mod321, n);
-                    panic!("parse int faied!");
-                }
-            }
-            let tmp: String = mod32.drain(..(mod32.len()-1)).collect();
-            // mod3 = tmp.parse::<usize>().unwrap();
-            if tmp.len() != 0 {
-                match tmp.parse::<usize>() {
-                    Ok(v) => mod3 = v,
-                    _ => {
-                        println!("{:?}", tmp);
-                        println!("Failed for: {:?}\n Full instruction: {}", tmp, n);
-                        panic!("parse int faied!");
-                    }
-                }
-            }
-            // mod2 = mod32.parse::<usize>().unwrap();
-            match mod32.parse::<usize>() {
-                Ok(v) => mod2 = v,
-                _ => { 
-                        // println!("{:?}", mod32);
-                        println!("Failed for: {:?}\n Full instruction: {}", mod32, mod321op);
-                        panic!("parse int faied!");
-                }
-            }
-        }
-        _ => {
-            panic!("Invalid Instruction format!");
-        }
-            
-    }
-    // println!("op: {:?} mod1: {:?} , mod2: {:?}, mod3: {:?}", op, mod1, mod2, mod3);
-    (op, mod1, mod2, mod3)
+    (n % 100, (n/100) % 10, (n/1000) % 10, (n/10000) % 10)
 }
 
-pub fn computer(input: &mut Vec<isize>) -> (i8, Vec<String>) {
-    // println!("Input tape: {:?}", input);
-    let mut i = 0;
-    let mut jmp_val;
-    let mut output_stream:Vec<String> = Vec::new();
+pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Vec<(String, Vec<String>)>) {
+    let mut output_stream:Vec<(String, Vec<String>)> = Vec::new();
     let mut exec_trace: Vec<String> = Vec::new();
-    // println!("input size {}", input.len());
-    while i < input.len() {
-        let instruction = input[i];
-        // println!("inst: {}, index: {}", instruction, i);
-        
-        exec_trace.push(format!("inst: {}, index: {}\n", instruction, i));
+    let mut ip = 0;
+    loop {
+        let instruction = input[ip];
+        exec_trace.push(format!("inst: {}, index: {}\n", instruction, ip));
         let (opcode, _mod1, _mod2, _mod3) = parse_instruction(instruction as usize);
-        exec_trace.push(format!("op: {:?} mod1: {:?} , mod2: {:?}, mod3: {:?}\n", opcode, _mod1, _mod2, _mod3));
+        exec_trace.push(format!("op: {:?} mod1: {:?} , mod2: {:?}, mod3: {:?}\n", 
+                                            opcode, _mod1, _mod2, _mod3));
         let val1: isize;
         let val2: isize;
-        let store_location: usize;
         match opcode {
             1 => { // ADD
-                let store_location = input[i+3];
-                val1 = 
-                        if _mod1 == 0 {
-                            input[input[i+1] as usize]
-                            } 
-                        else  {
-                            input[i+1]
-                        };
-                val2 = 
-                        if _mod2 == 0 {
-                            input[input[i+2] as usize]
-                            } 
-                        else  {
-                            input[i+2]
-                        };
-                input[store_location as usize] = val1 + val2;
-                jmp_val = 4;
+                let mem = input[ip+3] as usize;
+                val1 =      if _mod1 == 0 {
+                                input[input[ip+1] as usize]
+                            } else  {
+                                input[ip+1]
+                            };
+                val2 =      if _mod2 == 0 {
+                                input[input[ip+2] as usize]
+                            } else  {
+                                input[ip+2]
+                            };
+                input[mem] = val1 + val2;
+                ip += 4;
                 exec_trace.push(
                             format!("*ADD*\n\
                                 Store address: {}, val1: {}, val2: {}, Sum: {}\n", 
-                                        store_location,val1, val2, val1+val2)
+                                        mem, val1, val2, val1+val2)
                             );
             }
             2 => { // MUL
-                store_location = input[i+3] as usize;
-                val1 = 
-                        if _mod1 == 0 {
-                            input[input[i+1] as usize]
-                            } 
-                        else  {
-                            input[i+1]
-                        };
-                val2 = 
-                        if _mod2 == 0 {
-                            input[input[i+2] as usize]
-                            } 
-                        else  {
-                            input[i+2]
-                        };
-                input[store_location as usize] = val1 * val2;
-                jmp_val = 4;
+                let mem = input[ip+3] as usize;
+                val1 =      if _mod1 == 0 {
+                                input[input[ip+1] as usize]
+                            } else  {
+                                input[ip+1]
+                            };
+                val2 =      if _mod2 == 0 {
+                                input[input[ip+2] as usize]
+                            } else  {
+                                input[ip+2]
+                            };
+                input[mem] = val1 * val2;
+                ip += 4;
                 exec_trace.push(
                             format!("*MUL*\n\
                                 Store address: {}, val1: {}, val2: {}, Mul: {}\n", 
-                                        store_location,val1, val2, val1*val2)
+                                        mem, val1, val2, val1*val2)
                             );
             }
             3 => { // INPUT
-                store_location = input[i+1] as usize;
-                let simulated_input = 1; // Maybe can take real input from stdin? will see later :)
-                input[store_location as usize] = simulated_input;
-                jmp_val = 2;
+                let mem = input[ip+1];
+                input[mem as usize] = stdinbuf.pop().expect("Err: STDIN empty");
+                ip += 2;
+                exec_trace.push(
+                            format!("*INPUT*\n\
+                                Store address: {}, input : {}\n", 
+                                        mem, input[mem as usize])
+                            );
             }
             4 => { // OUTPUT
-                let mem_addr = input[i+1] as usize;
-                let out = if _mod1 == 0 {
-                                    input[mem_addr].to_string()
+                let mem_addr = input[ip+1] as usize;
+                let out =   if _mod1 == 0 {
+                                input[mem_addr].to_string()
                             } else {
-                                    mem_addr.to_string()
+                                mem_addr.to_string()
                             };
                 exec_trace.push(
                             format!("*OUT*\n\
                                 val: {}\n", 
                                         out)
                             );
-                if out != "0" && input[i+1] != 99 {
+                if out != "0" && input[ip+2] != 99 {
                     println!("Execution trace :\n");
                     for trace in exec_trace.clone() {
                         print!("{}",  trace);
                     }
                     panic!("panic!");
                 }
+                output_stream.push((out, exec_trace.to_vec()));
                 exec_trace.clear();
-                output_stream.push(out);
-                jmp_val = 2;
+                ip += 2;
             }
+            5 => { // jump-if-true
+                let val =   if _mod1 == 0 {
+                                input[input[ip + 1] as usize]
+                            } else {
+                                input[ip + 1]
+                            };
+                let jmp =   if _mod2 == 0 {
+                                input[input[ip + 2] as usize]
+                            } else {
+                                input[ip + 2]
+                            };
+                ip =        if val != 0 {
+                                jmp as usize
+                            } else {
+                                ip + 3
+                            };
+                exec_trace.push(
+                            format!("*jump-if-true*\n\
+                                Value: {}, jmp_location  : {}\n", 
+                                        val, jmp)
+                            );
+            },
+
+            6 => { // jump-if-fase
+                let val =   if _mod1 == 0 {
+                                input[input[ip + 1] as usize]
+                            } else {
+                                input[ip + 1]
+                            };
+                let jmp =   if _mod2 == 0 {
+                                input[input[ip + 2] as usize]
+                            } else {
+                                input[ip + 2]
+                            };
+                ip =        if val == 0 {
+                                jmp as usize
+                            } else {
+                                ip + 3
+                            };
+                exec_trace.push(
+                            format!("*jump-if-true*\n\
+                                Value: {}, jmp_location  : {}\n", 
+                                        val, jmp)
+                            );
+            },
+
+            7 => { // less-than
+                let mem = input[ip+3] as usize;
+                val1 =      if _mod1 == 0 {
+                                input[input[ip+1] as usize]
+                            } else  {
+                                input[ip+1]
+                            };
+                val2 =      if _mod2 == 0 {
+                                input[input[ip+2] as usize]
+                            } else  {
+                                input[ip+2]
+                            };
+                input[mem] = if val1 < val2 {
+                                1
+                            } else {
+                                0
+                            };
+                ip += 4;
+                exec_trace.push(
+                            format!("*less-than*\n\
+                                Value1: {}, Value2: {} mem  : {}\n", 
+                                        val1, val2, mem)
+                            );
+            },
+            8 => { // equals
+                let mem = input[ip+3] as usize;
+                val1 =      if _mod1 == 0 {
+                                input[input[ip+1] as usize]
+                            } else  {
+                                input[ip+1]
+                            };
+                val2 =      if _mod2 == 0 {
+                                input[input[ip+2] as usize]
+                            } else  {
+                                input[ip+2]
+                            };
+                input[mem] = if val1 == val2 {
+                                1
+                            } else {
+                                0
+                            };
+                ip += 4;
+                exec_trace.push(
+                            format!("*equals*\n\
+                                Value1: {}, Value2: {} mem  : {}\n", 
+                                        val1, val2, mem)
+                            );
+            },
             99 => { // HALT
                 return (1, output_stream)
             }
             _ => { // INVALID
-                println!(" PANIC!!! {}", input[i]);
+                println!(" PANIC!!! {} {}", input[ip], opcode);
                 return (-1, output_stream)
             }
         }
-        i+=jmp_val; // JUMP 4 MEMORY LOCATION TO GET TO NEXT opcode
-        // println!("jmp: {}", jmp_val);
     }
-    (1, output_stream)
 }
