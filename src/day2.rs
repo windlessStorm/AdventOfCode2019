@@ -54,8 +54,8 @@ fn parse_instruction(n: usize) -> (usize, usize, usize, usize) {
     (n % 100, (n/100) % 10, (n/1000) % 10, (n/10000) % 10)
 }
 
-pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Vec<(String, Vec<String>)>) {
-    let mut output_stream:Vec<(String, Vec<String>)> = Vec::new();
+pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Vec<(isize, Vec<String>)>) {
+    let mut output_stream:Vec<(isize, Vec<String>)> = Vec::new();
     let mut exec_trace: Vec<String> = Vec::new();
     let mut ip = 0;
     loop {
@@ -120,16 +120,16 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
             4 => { // OUTPUT
                 let mem_addr = input[ip+1] as usize;
                 let out =   if _mod1 == 0 {
-                                input[mem_addr].to_string()
+                                input[mem_addr]
                             } else {
-                                mem_addr.to_string()
+                                mem_addr as isize
                             };
                 exec_trace.push(
                             format!("*OUT*\n\
                                 val: {}\n", 
                                         out)
                             );
-                if out != "0" && input[ip+2] != 99 {
+                if out != 0 && input[ip+2] != 99 {
                     println!("Execution trace :\n");
                     for trace in exec_trace.clone() {
                         print!("{}",  trace);

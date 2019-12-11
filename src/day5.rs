@@ -24,7 +24,7 @@ pub fn day5() {
     }
 
     let output = out.last().expect("no output!!!?");
-    println!("D51: Program HALT with output= {:?}",  output.0);
+    println!("D51: Program HALT with output= {}",  output.0);
 
     // Part 2
     input_mut = input.to_vec();
@@ -35,5 +35,5 @@ pub fn day5() {
     }
 
     let output = out.last().expect("no output!!!?");
-    println!("D52: Program HALT with output= {:?}",  output.0);
+    println!("D52: Program HALT with output= {}",  output.0);
 }
