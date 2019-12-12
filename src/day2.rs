@@ -26,8 +26,9 @@ pub fn day2() {
     let mut input_mut: Vec<isize> = input.to_vec();
     input_mut[1] = 12;
     input_mut[2] = 2;
+    let mut ip = 0;
     let mut stdinbuf: Vec<isize> = Vec::new();
-    let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf);
+    let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf, &mut Vec::new(), &mut ip);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
@@ -38,7 +39,8 @@ pub fn day2() {
         input_mut = input.to_vec();
         input_mut[1] = noun as isize;
         input_mut[2] = verb as isize;
-        let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf);
+        ip = 0;
+        let (exitcode, _) = computer(&mut input_mut, &mut stdinbuf, &mut Vec::new(), &mut ip);
         if exitcode != 1{
             panic!("Exit code: {} !! Something went wrong!!", exitcode);
         }
@@ -54,12 +56,16 @@ fn parse_instruction(n: usize) -> (usize, usize, usize, usize) {
     (n % 100, (n/100) % 10, (n/1000) % 10, (n/10000) % 10)
 }
 
-pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Vec<(isize, Vec<String>)>) {
+pub fn computer(input: &mut Vec<isize>, 
+                    stdinbuf: &mut Vec<isize>, 
+                        stdoutbuf: &mut Vec<isize>,
+                            ip: &mut usize) 
+                            -> (isize, Vec<(isize, Vec<String>)>) {
     let mut output_stream:Vec<(isize, Vec<String>)> = Vec::new();
     let mut exec_trace: Vec<String> = Vec::new();
-    let mut ip = 0;
+    // let mut ip = ip;
     loop {
-        let instruction = input[ip];
+        let instruction = input[*ip];
         exec_trace.push(format!("inst: {}, index: {}\n", instruction, ip));
         let (opcode, _mod1, _mod2, _mod3) = parse_instruction(instruction as usize);
         exec_trace.push(format!("op: {:?} mod1: {:?} , mod2: {:?}, mod3: {:?}\n", 
@@ -68,19 +74,19 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
         let val2: isize;
         match opcode {
             1 => { // ADD
-                let mem = input[ip+3] as usize;
+                let mem = input[*ip+3] as usize;
                 val1 =      if _mod1 == 0 {
-                                input[input[ip+1] as usize]
+                                input[input[*ip+1] as usize]
                             } else  {
-                                input[ip+1]
+                                input[*ip+1]
                             };
                 val2 =      if _mod2 == 0 {
-                                input[input[ip+2] as usize]
+                                input[input[*ip+2] as usize]
                             } else  {
-                                input[ip+2]
+                                input[*ip+2]
                             };
                 input[mem] = val1 + val2;
-                ip += 4;
+                *ip += 4;
                 exec_trace.push(
                             format!("*ADD*\n\
                                 Store address: {}, val1: {}, val2: {}, Sum: {}\n", 
@@ -88,19 +94,19 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                             );
             }
             2 => { // MUL
-                let mem = input[ip+3] as usize;
+                let mem = input[*ip+3] as usize;
                 val1 =      if _mod1 == 0 {
-                                input[input[ip+1] as usize]
+                                input[input[*ip+1] as usize]
                             } else  {
-                                input[ip+1]
+                                input[*ip+1]
                             };
                 val2 =      if _mod2 == 0 {
-                                input[input[ip+2] as usize]
+                                input[input[*ip+2] as usize]
                             } else  {
-                                input[ip+2]
+                                input[*ip+2]
                             };
                 input[mem] = val1 * val2;
-                ip += 4;
+                *ip += 4;
                 exec_trace.push(
                             format!("*MUL*\n\
                                 Store address: {}, val1: {}, val2: {}, Mul: {}\n", 
@@ -108,9 +114,10 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                             );
             }
             3 => { // INPUT
-                let mem = input[ip+1];
+                let mem = input[*ip+1];
+                if stdinbuf.is_empty() { return (2, output_stream) }
                 input[mem as usize] = stdinbuf.pop().expect("Err: STDIN empty");
-                ip += 2;
+                *ip += 2;
                 exec_trace.push(
                             format!("*INPUT*\n\
                                 Store address: {}, input : {}\n", 
@@ -118,7 +125,7 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                             );
             }
             4 => { // OUTPUT
-                let mem_addr = input[ip+1] as usize;
+                let mem_addr = input[*ip+1] as usize;
                 let out =   if _mod1 == 0 {
                                 input[mem_addr]
                             } else {
@@ -129,32 +136,33 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                                 val: {}\n", 
                                         out)
                             );
-                if out != 0 && input[ip+2] != 99 {
-                    println!("Execution trace :\n");
-                    for trace in exec_trace.clone() {
-                        print!("{}",  trace);
-                    }
-                    panic!("panic!");
-                }
+                // if out != 0 && input[ip+2] != 99 {
+                //     println!("Execution trace :\n");
+                //     for trace in exec_trace.clone() {
+                //         print!("{}",  trace);
+                //     }
+                //     panic!("panic!");
+                // }
+                stdoutbuf.push(out);
                 output_stream.push((out, exec_trace.to_vec()));
                 exec_trace.clear();
-                ip += 2;
+                *ip += 2;
             }
             5 => { // jump-if-true
                 let val =   if _mod1 == 0 {
-                                input[input[ip + 1] as usize]
+                                input[input[*ip + 1] as usize]
                             } else {
-                                input[ip + 1]
+                                input[*ip + 1]
                             };
                 let jmp =   if _mod2 == 0 {
-                                input[input[ip + 2] as usize]
+                                input[input[*ip + 2] as usize]
                             } else {
-                                input[ip + 2]
+                                input[*ip + 2]
                             };
-                ip =        if val != 0 {
+                *ip =        if val != 0 {
                                 jmp as usize
                             } else {
-                                ip + 3
+                                *ip + 3
                             };
                 exec_trace.push(
                             format!("*jump-if-true*\n\
@@ -165,19 +173,19 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
 
             6 => { // jump-if-fase
                 let val =   if _mod1 == 0 {
-                                input[input[ip + 1] as usize]
+                                input[input[*ip + 1] as usize]
                             } else {
-                                input[ip + 1]
+                                input[*ip + 1]
                             };
                 let jmp =   if _mod2 == 0 {
-                                input[input[ip + 2] as usize]
+                                input[input[*ip + 2] as usize]
                             } else {
-                                input[ip + 2]
+                                input[*ip + 2]
                             };
-                ip =        if val == 0 {
+                *ip =        if val == 0 {
                                 jmp as usize
                             } else {
-                                ip + 3
+                                *ip + 3
                             };
                 exec_trace.push(
                             format!("*jump-if-true*\n\
@@ -187,23 +195,23 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
             },
 
             7 => { // less-than
-                let mem = input[ip+3] as usize;
+                let mem = input[*ip+3] as usize;
                 val1 =      if _mod1 == 0 {
-                                input[input[ip+1] as usize]
+                                input[input[*ip+1] as usize]
                             } else  {
-                                input[ip+1]
+                                input[*ip+1]
                             };
                 val2 =      if _mod2 == 0 {
-                                input[input[ip+2] as usize]
+                                input[input[*ip+2] as usize]
                             } else  {
-                                input[ip+2]
+                                input[*ip+2]
                             };
                 input[mem] = if val1 < val2 {
                                 1
                             } else {
                                 0
                             };
-                ip += 4;
+                *ip += 4;
                 exec_trace.push(
                             format!("*less-than*\n\
                                 Value1: {}, Value2: {} mem  : {}\n", 
@@ -211,23 +219,23 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                             );
             },
             8 => { // equals
-                let mem = input[ip+3] as usize;
+                let mem = input[*ip+3] as usize;
                 val1 =      if _mod1 == 0 {
-                                input[input[ip+1] as usize]
+                                input[input[*ip+1] as usize]
                             } else  {
-                                input[ip+1]
+                                input[*ip+1]
                             };
                 val2 =      if _mod2 == 0 {
-                                input[input[ip+2] as usize]
+                                input[input[*ip+2] as usize]
                             } else  {
-                                input[ip+2]
+                                input[*ip+2]
                             };
                 input[mem] = if val1 == val2 {
                                 1
                             } else {
                                 0
                             };
-                ip += 4;
+                *ip += 4;
                 exec_trace.push(
                             format!("*equals*\n\
                                 Value1: {}, Value2: {} mem  : {}\n", 
@@ -238,7 +246,7 @@ pub fn computer(input: &mut Vec<isize>, stdinbuf: &mut Vec<isize>) -> (isize, Ve
                 return (1, output_stream)
             }
             _ => { // INVALID
-                println!(" PANIC!!! {} {}", input[ip], opcode);
+                println!(" PANIC!!! {} {}", input[*ip], opcode);
                 return (-1, output_stream)
             }
         }
