@@ -5,11 +5,9 @@ pub fn day2() {
 
     // create all combinations for cross product (0,1,2,3,..99) X (0,1,2,3,..99)
     // pair = [(0,0), (0,1).. (0,99), (1,0), (1,1), (1,2).. (1,99).......... (99,99)]
-    let a: Vec<u8> = (0..100).collect();
-    let b: Vec<u8> = (0..100).collect();
     let mut pairs: Vec<(u8, u8)> = Vec::new();
-    for i in a {
-        for j in b.clone() {
+    for i in 0..100 {
+        for j in 0..100 {
             pairs.push((i,j))
         }
     }
@@ -21,7 +19,6 @@ pub fn day2() {
 
     let input: Vec<isize> = inputbuf.split(",").map(|x| x.parse::<isize>().unwrap()).collect();
 
-
     // PART 1
     let mut input_mut: Vec<isize> = input.to_vec();
     input_mut[1] = 12;
@@ -32,6 +29,7 @@ pub fn day2() {
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
+    
     // PART 2
     let mut result = input_mut[0];
     println!("D21: Program HALT with default pair {} and {} with position [0]= {}", 12, 2, result);
