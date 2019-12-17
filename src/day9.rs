@@ -25,7 +25,7 @@ pub fn day9() {
     }
     // println!("D91: Program HALT with output= {:?}",  out);
     // let output = out.last().expect("no output!!!?");
-    println!("D91: Program HALT with output= {:?}",  stdout_buf);
+    println!("D91: Program HALT with BOOST keycode = {:?}",  stdout_buf);
 
     // Part 2
     input_mut = input.to_vec();
@@ -38,5 +38,5 @@ pub fn day9() {
     }
     // println!("D91: Program HALT with output= {:?}",  out);
     // let output = out.last().expect("no output!!!?");
-    println!("D92: Program HALT with output= {:?}",  stdout_buf);
+    println!("D92: Program HALT with coordinates of Ceres monitoring station = {:?}",  stdout_buf);
 }
