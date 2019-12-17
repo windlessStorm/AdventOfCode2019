@@ -29,7 +29,7 @@ pub fn day2() {
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
-    
+
     // PART 2
     let mut result = input_mut[0];
     println!("D21: Program HALT with default pair {} and {} with position [0]= {}", 12, 2, result);
@@ -61,27 +61,48 @@ pub fn computer(input: &mut Vec<isize>,
                             -> (isize, Vec<(isize, Vec<String>)>) {
     let mut output_stream:Vec<(isize, Vec<String>)> = Vec::new();
     let mut exec_trace: Vec<String> = Vec::new();
+    let mut rbase: usize = 0;
+    if input.len() < 1000 { input.resize(10000, 0) }
     // let mut ip = ip;
+    // println!("Starting machine!\n Input={:?}", input);
     loop {
         let instruction = input[*ip];
-        exec_trace.push(format!("inst: {}, index: {}\n", instruction, ip));
+        exec_trace.push(format!("instruction: {}, ip: {}, rbase: {}\n", instruction, ip, rbase));
         let (opcode, _mod1, _mod2, _mod3) = parse_instruction(instruction as usize);
         exec_trace.push(format!("op: {:?} mod1: {:?} , mod2: {:?}, mod3: {:?}\n", 
                                             opcode, _mod1, _mod2, _mod3));
         let val1: isize;
         let val2: isize;
+        
+        // println!("************************************************");
+        // println!("stdout : {:?}", stdoutbuf);
+        // for t in exec_trace.clone() {
+        //     println!("{}", t);
+        // }
+        // println!("Next 4 input : {} {} {} {}", input[*ip], input[*ip+1], input[*ip+2], input[*ip+3]);
+
         match opcode {
             1 => { // ADD
-                let mem = input[*ip+3] as usize;
+                let param3 = input[*ip+3];
+                let mem =   if _mod3 == 2 {
+                                (rbase as isize + param3) as usize
+                            } else { // _mod3 cant be 1, just 0 and 2
+                                param3 as usize
+                            };
+
                 val1 =      if _mod1 == 0 {
                                 input[input[*ip+1] as usize]
-                            } else  {
+                            } else if _mod1 == 1  {
                                 input[*ip+1]
+                            } else { // _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 val2 =      if _mod2 == 0 {
                                 input[input[*ip+2] as usize]
-                            } else  {
+                            } else if _mod2 == 1 {
                                 input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 input[mem] = val1 + val2;
                 *ip += 4;
@@ -92,16 +113,25 @@ pub fn computer(input: &mut Vec<isize>,
                             );
             }
             2 => { // MUL
-                let mem = input[*ip+3] as usize;
+                let param3 = input[*ip+3];
+                let mem =   if _mod3 == 2 {
+                                (rbase as isize + param3) as usize
+                            } else { // _mod3 cant be 1, just 0 and 2
+                                param3 as usize
+                            };
                 val1 =      if _mod1 == 0 {
                                 input[input[*ip+1] as usize]
-                            } else  {
+                            } else if _mod1 == 1 {
                                 input[*ip+1]
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 val2 =      if _mod2 == 0 {
                                 input[input[*ip+2] as usize]
-                            } else  {
+                            } else if _mod2 == 1 {
                                 input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 input[mem] = val1 * val2;
                 *ip += 4;
@@ -112,9 +142,14 @@ pub fn computer(input: &mut Vec<isize>,
                             );
             }
             3 => { // INPUT
-                let mem = input[*ip+1];
+                let param = input[*ip+1];
+                let mem =   if _mod1 == 2 {
+                                (rbase as isize + param) as usize
+                            } else { // _mod3 cant be 1, just 0 and 2
+                                param as usize
+                            };
                 if stdinbuf.is_empty() { return (2, output_stream) }
-                input[mem as usize] = stdinbuf.pop().expect("Err: STDIN empty");
+                input[mem] = stdinbuf.pop().expect("Err: STDIN empty");
                 *ip += 2;
                 exec_trace.push(
                             format!("*INPUT*\n\
@@ -123,11 +158,13 @@ pub fn computer(input: &mut Vec<isize>,
                             );
             }
             4 => { // OUTPUT
-                let mem_addr = input[*ip+1] as usize;
+                let mem_addr = input[*ip+1];
                 let out =   if _mod1 == 0 {
-                                input[mem_addr]
-                            } else {
+                                input[mem_addr as usize]
+                            } else if _mod1 == 1 {
                                 mem_addr as isize
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + mem_addr) as usize]
                             };
                 exec_trace.push(
                             format!("*OUT*\n\
@@ -149,13 +186,17 @@ pub fn computer(input: &mut Vec<isize>,
             5 => { // jump-if-true
                 let val =   if _mod1 == 0 {
                                 input[input[*ip + 1] as usize]
-                            } else {
-                                input[*ip + 1]
+                            } else if _mod1 == 1 {
+                                input[*ip+1]
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 let jmp =   if _mod2 == 0 {
                                 input[input[*ip + 2] as usize]
-                            } else {
-                                input[*ip + 2]
+                            } else if _mod2 == 1 {
+                                input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 *ip =        if val != 0 {
                                 jmp as usize
@@ -172,13 +213,17 @@ pub fn computer(input: &mut Vec<isize>,
             6 => { // jump-if-fase
                 let val =   if _mod1 == 0 {
                                 input[input[*ip + 1] as usize]
-                            } else {
-                                input[*ip + 1]
+                            } else if _mod1 == 1 {
+                                input[*ip+1]
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 let jmp =   if _mod2 == 0 {
                                 input[input[*ip + 2] as usize]
-                            } else {
-                                input[*ip + 2]
+                            } else if _mod2 == 1 {
+                                input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 *ip =        if val == 0 {
                                 jmp as usize
@@ -193,16 +238,25 @@ pub fn computer(input: &mut Vec<isize>,
             },
 
             7 => { // less-than
-                let mem = input[*ip+3] as usize;
+                let param3 = input[*ip+3];
+                let mem =   if _mod3 == 2 {
+                                (rbase as isize + param3) as usize
+                            } else { // _mod3 cant be 1, just 0 and 2
+                                param3 as usize
+                            };
                 val1 =      if _mod1 == 0 {
                                 input[input[*ip+1] as usize]
-                            } else  {
+                            } else if _mod1 == 1 {
                                 input[*ip+1]
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 val2 =      if _mod2 == 0 {
                                 input[input[*ip+2] as usize]
-                            } else  {
+                            } else if _mod2 == 1 {
                                 input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 input[mem] = if val1 < val2 {
                                 1
@@ -217,16 +271,25 @@ pub fn computer(input: &mut Vec<isize>,
                             );
             },
             8 => { // equals
-                let mem = input[*ip+3] as usize;
+                let param3 = input[*ip+3];
+                let mem =   if _mod3 == 2 {
+                                (rbase as isize + param3) as usize
+                            } else { // _mod3 cant be 1, just 0 and 2
+                                param3 as usize
+                            };
                 val1 =      if _mod1 == 0 {
                                 input[input[*ip+1] as usize]
-                            } else  {
+                            } else if _mod1 == 1 {
                                 input[*ip+1]
+                            } else {// _mod1 == 2
+                                input[(rbase as isize + input[*ip+1]) as usize]
                             };
                 val2 =      if _mod2 == 0 {
                                 input[input[*ip+2] as usize]
-                            } else  {
+                            } else if _mod2 == 1 {
                                 input[*ip+2]
+                            } else {// _mod2 == 2
+                                input[(rbase as isize + input[*ip+2]) as usize]
                             };
                 input[mem] = if val1 == val2 {
                                 1
@@ -240,6 +303,17 @@ pub fn computer(input: &mut Vec<isize>,
                                         val1, val2, mem)
                             );
             },
+            9 => { // relative-base-offset
+                let val = if _mod1 == 0 {
+                            input[input[*ip+1] as usize]
+                        } else if _mod1 == 1 {
+                            input[*ip+1]
+                        } else { // 2
+                            input[(rbase as isize + input[*ip+1]) as usize]
+                        };
+                rbase = (rbase as isize + val) as usize;
+                *ip += 2;
+            }
             99 => { // HALT
                 return (1, output_stream)
             }

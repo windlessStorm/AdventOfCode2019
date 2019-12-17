@@ -107,4 +107,5 @@ fn paint_frame(frame: Vec<usize>) {
         }
         i += 1;
     }
+    print!("\n\n");
 }
