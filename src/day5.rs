@@ -19,7 +19,8 @@ pub fn day5() {
     
     stdin_buf.push(1);
     let mut ip = 0;
-    let (exitcode, out) = computer(&mut input_mut, &mut stdin_buf, &mut Vec::new(), &mut ip);
+    let mut rbase = 0;
+    let (exitcode, out) = computer(&mut input_mut, &mut stdin_buf, &mut Vec::new(), &mut ip, &mut rbase);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
@@ -31,7 +32,8 @@ pub fn day5() {
     input_mut = input.to_vec();
     stdin_buf.push(5);
     ip = 0; 
-    let (exitcode, out) = computer(&mut input_mut, &mut stdin_buf, &mut Vec::new(), &mut ip);
+    rbase = 0;
+    let (exitcode, out) = computer(&mut input_mut, &mut stdin_buf, &mut Vec::new(), &mut ip, &mut rbase);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }

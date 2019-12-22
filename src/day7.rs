@@ -71,7 +71,8 @@ pub fn day7() {
 
 fn run_amp_sequence(input: &mut Vec<isize>, stdin_buf: &mut Vec<isize>) -> isize {
     let mut ip = 0;
-    let (exitcode, out) = computer(input, stdin_buf, &mut Vec::new(), &mut ip);
+    let mut rbase = 0;
+    let (exitcode, out) = computer(input, stdin_buf, &mut Vec::new(), &mut ip, &mut rbase);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
@@ -91,6 +92,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
     let mut stdin_buf5: Vec<isize> = Vec::new();
     
     let (mut ip1, mut ip2, mut ip3, mut ip4, mut ip5) = (0, 0, 0, 0, 0);
+    let (mut rbase1, mut rbase2, mut rbase3, mut rbase4, mut rbase5) = (0, 0, 0, 0, 0);
     let (mut halt1, mut halt2, mut halt3, mut halt4) = ( false, false, false, false);
 
     stdin_buf1.push(phase_seq.pop().expect("??"));
@@ -107,7 +109,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
         //                             ip1 = {}",stdin_buf1, stdin_buf2, ip1 );
         if !halt1 {
             stdin_buf1.reverse();
-            let output = computer(&mut input1, &mut stdin_buf1, &mut stdin_buf2, &mut ip1);
+            let output = computer(&mut input1, &mut stdin_buf1, &mut stdin_buf2, &mut ip1, &mut rbase1);
             if output.0 == 1 {
                 halt1 = true;
             } 
@@ -120,7 +122,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
         //                             ip2 = {}",stdin_buf2, stdin_buf3, ip2 );
         if !halt2 {
             stdin_buf2.reverse();
-            let output = computer(&mut input2, &mut stdin_buf2, &mut stdin_buf3, &mut ip2);
+            let output = computer(&mut input2, &mut stdin_buf2, &mut stdin_buf3, &mut ip2, &mut rbase2);
             if output.0 == 1 {
                 halt2 = true;
             } 
@@ -133,7 +135,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
         //                             ip3 = {}",stdin_buf3, stdin_buf4, ip3 );
         if !halt3 {
             stdin_buf3.reverse();
-            let output = computer(&mut input3, &mut stdin_buf3, &mut stdin_buf4, &mut ip3);
+            let output = computer(&mut input3, &mut stdin_buf3, &mut stdin_buf4, &mut ip3, &mut rbase3);
             if output.0 == 1 {
                 halt3 = true;
             } 
@@ -146,7 +148,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
         //                             ip4 = {}",stdin_buf4, stdin_buf5, ip4 );
         if !halt4 {
             stdin_buf4.reverse();
-            let output = computer(&mut input4, &mut stdin_buf4, &mut stdin_buf5, &mut ip4);
+            let output = computer(&mut input4, &mut stdin_buf4, &mut stdin_buf5, &mut ip4, &mut rbase4);
             if output.0 == 1 {
                 halt4 = true;
             } 
@@ -158,7 +160,7 @@ fn amplifier_feedback_loop(input: Vec<isize>, phase_seq: &mut Vec<isize>) -> isi
         //                     stdin_buf1 *shud be empty* = {:?}\n
         //                             ip5 = {}",stdin_buf5, stdin_buf1, ip5 );
         stdin_buf5.reverse();
-        let output = computer(&mut input5, &mut stdin_buf5, &mut stdin_buf1, &mut ip5);
+        let output = computer(&mut input5, &mut stdin_buf5, &mut stdin_buf1, &mut ip5, &mut rbase5);
         if output.0 == 1 {
             break;
         }

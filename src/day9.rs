@@ -19,7 +19,8 @@ pub fn day9() {
     
     stdin_buf.push(1);
     let mut ip = 0;
-    let (exitcode, _) = computer(&mut input_mut, &mut stdin_buf, &mut stdout_buf, &mut ip);
+    let mut rbase = 0;
+    let (exitcode, _) = computer(&mut input_mut, &mut stdin_buf, &mut stdout_buf, &mut ip, &mut rbase);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
@@ -32,7 +33,8 @@ pub fn day9() {
     stdout_buf.clear();
     stdin_buf.push(2);
     ip = 0; 
-    let (exitcode, _) = computer(&mut input_mut, &mut stdin_buf, &mut stdout_buf, &mut ip);
+    rbase = 0;
+    let (exitcode, _) = computer(&mut input_mut, &mut stdin_buf, &mut stdout_buf, &mut ip, &mut rbase);
     if exitcode != 1{
         panic!("Exit code: {} !! Something went wrong!!", exitcode);
     }
